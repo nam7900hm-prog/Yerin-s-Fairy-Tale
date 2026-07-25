@@ -40,13 +40,13 @@ const NARRATION={
   cast:{ko:'등장인물별 목소리',en:'Character Voices',rate:.84,pitch:1,pause:340}
 };
 function setupNarration(){
-  const label=document.createElement('label');label.id='narrationLabel';label.textContent='구연 방식';
-  const select=document.createElement('select');select.id='narration';
+  const label=$('#narrationLabel');
+  const select=$('#narration');
+  select.innerHTML='';
   Object.keys(NARRATION).forEach(function(key){select.add(new Option(NARRATION[key][state.lang],key))});
   select.value=localStorage.getItem('yelin-narration')||'grandma';select.onchange=function(){localStorage.setItem('yelin-narration',select.value);stop()};
-  label.appendChild(select);$('#voice').closest('label').before(label);
 }
-function refreshNarrationLabels(){const select=$('#narration');if(!select)return;Array.from(select.options).forEach(function(option){option.textContent=NARRATION[option.value][state.lang]});$('#narrationLabel').firstChild.nodeValue=state.lang==='ko'?'구연 방식':'Narration style'}
+function refreshNarrationLabels(){const select=$('#narration');if(!select)return;Array.from(select.options).forEach(function(option){option.textContent=NARRATION[option.value][state.lang]});$('#narrationLabel').childNodes[0].nodeValue=state.lang==='ko'?'구연 방식':'Narration style'}
 function speechMessage(message){let el=$('#speechStatus');if(!el){el=document.createElement('p');el.id='speechStatus';el.setAttribute('role','status');el.setAttribute('aria-live','polite');$('#stop').parentElement.after(el)}el.textContent=message}
 function loadVoices(){
   if(!('speechSynthesis' in window))return;
