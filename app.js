@@ -31,4 +31,64 @@ async function record(){if(recording){mediaRecorder.stop();return}try{const stre
 function recordKey(){return 'yelin-audio-'+state.cat+'-'+state.index+'-'+state.lang+'-'+state.age}
 function loadRecording(){const src=localStorage.getItem(recordKey());$('#audio').hidden=$('#delete').hidden=!src;if(src)$('#audio').src=src;else $('#audio').removeAttribute('src')}
 function removeRecording(){localStorage.removeItem(recordKey());loadRecording();$('#recordStatus').textContent='녹음을 삭제했어요.'}
-init();
+let activeUtterance=null,speechParts=[],speechPartIndex=0,voiceRetries=0,speechTimer=null;
+const NARRATION={
+  grandma:{ko:'서울말 할머니',en:'American Grandma',rate:.76,pitch:.9,pause:520},
+  grandpa:{ko:'다정한 할아버지',en:'American Grandpa',rate:.72,pitch:.72,pause:480},
+  teacher:{ko:'신나는 동화 선생님',en:'Exciting Story Teacher',rate:.92,pitch:1.08,pause:260},
+  bedtime:{ko:'잔잔한 잠자리 이야기',en:'Gentle Bedtime Story',rate:.66,pitch:.86,pause:720},
+  cast:{ko:'등장인물별 목소리',en:'Character Voices',rate:.84,pitch:1,pause:340}
+};
+function setupNarration(){
+  const label=document.createElement('label');label.id='narrationLabel';label.textContent='구연 방식';
+  const select=document.createElement('select');select.id='narration';
+  Object.keys(NARRATION).forEach(function(key){select.add(new Option(NARRATION[key][state.lang],key))});
+  select.value=localStorage.getItem('yelin-narration')||'grandma';select.onchange=function(){localStorage.setItem('yelin-narration',select.value);stop()};
+  label.appendChild(select);$('#voice').closest('label').before(label);
+}
+function refreshNarrationLabels(){const select=$('#narration');if(!select)return;Array.from(select.options).forEach(function(option){option.textContent=NARRATION[option.value][state.lang]});$('#narrationLabel').firstChild.nodeValue=state.lang==='ko'?'구연 방식':'Narration style'}
+function speechMessage(message){let el=$('#speechStatus');if(!el){el=document.createElement('p');el.id='speechStatus';el.setAttribute('role','status');el.setAttribute('aria-live','polite');$('#stop').parentElement.after(el)}el.textContent=message}
+function loadVoices(){
+  if(!('speechSynthesis' in window))return;
+  const all=speechSynthesis.getVoices();
+  const vs=all.filter(function(v){return state.lang==='ko'?/^ko/i.test(v.lang):/^en/i.test(v.lang)});
+  $('#voice').innerHTML='';
+  vs.forEach(function(v){$('#voice').add(new Option(v.name+' · '+v.lang,v.name))});
+  state.voice=vs.find(function(v){return state.lang==='en'&&/^en-US/i.test(v.lang)&&/Natural|Google|Microsoft|Siri|Samsung/i.test(v.name)})||vs.find(function(v){return /Natural|Google|Microsoft|Siri|Samsung/i.test(v.name)})||vs[0]||null;
+  if(state.voice)$('#voice').value=state.voice.name;
+  if(!vs.length){$('#voice').add(new Option(state.lang==='ko'?'기기 기본 한국어 목소리':'Device default English voice',''));if(voiceRetries++<8)setTimeout(loadVoices,500)}
+}
+function deliveryFor(text,index){
+  const key=$('#narration')?$('#narration').value:'grandma',base=NARRATION[key]||NARRATION.grandma;
+  let rate=base.rate,pitch=base.pitch,pause=base.pause;
+  const age=state.age;
+  if(age<=2){rate-=.08;pause+=180}else if(age<=5){pitch+=.04}else{rate+=.04}
+  if(/!|놀라|깜짝|달려|신나|wow|suddenly|excited/i.test(text)){rate+=.13;pitch+=.13;pause-=100}
+  if(/슬프|눈물|외로|속상|sad|tear|lonely|sorry/i.test(text)){rate-=.1;pitch-=.09;pause+=180}
+  if(/옛날 옛날에|once upon a time/i.test(text)){rate-=.12;pitch-=.08;pause+=260}
+  if(key==='cast'){
+    if(/[“\"]/.test(text)){pitch=index%2?1.2:.78;rate=index%2?.92:.76}
+    else if(/예린|Yerin/i.test(text)){pitch=1.08;rate=.88}
+    else if(/사자|토끼|거북|염소|lion|rabbit|tortoise|goat/i.test(text)){pitch=index%2?.72:1.22;rate=index%2?.74:.98}
+  }
+  return {rate:Math.max(.5,Math.min(1.25,rate*(+$('#rate').value/.88))),pitch:Math.max(.5,Math.min(1.5,pitch)),pause:Math.max(120,pause)};
+}
+function speakNext(){
+  if(speechPartIndex>=speechParts.length){activeUtterance=null;speechMessage(state.lang==='ko'?'이야기를 모두 들었어요.':'The story is finished.');return}
+  const index=speechPartIndex,text=speechParts[speechPartIndex++],delivery=deliveryFor(text,index);
+  const u=new SpeechSynthesisUtterance(text);activeUtterance=u;
+  u.lang=state.lang==='ko'?'ko-KR':'en-US';u.rate=delivery.rate;u.pitch=delivery.pitch;if(state.voice)u.voice=state.voice;
+  u.onstart=function(){speechMessage(state.lang==='ko'?'감정을 담아 이야기를 읽고 있어요…':'Reading with expression…')};u.onend=function(){speechTimer=setTimeout(speakNext,delivery.pause)};
+  u.onerror=function(e){activeUtterance=null;speechMessage(e.error==='canceled'?'':(state.lang==='ko'?'휴대폰의 음성 서비스를 확인해 주세요.':'Please check the phone speech service.'))};
+  speechSynthesis.speak(u);
+}
+function play(){
+  if(!$('#audio').hidden&&$('#audio').src){$('#audio').play().catch(function(){speechMessage('화면을 한 번 누른 뒤 다시 재생해 주세요.')});return}
+  if(!('speechSynthesis' in window)){alert('이 브라우저는 음성 읽기를 지원하지 않습니다. Chrome 또는 Safari를 이용해 주세요.');return}
+  speechSynthesis.cancel();speechSynthesis.resume();loadVoices();speechParts=$('#text').textContent.match(/[^.!?。！？]+[.!?。！？]?/g)||[$('#text').textContent];speechParts=speechParts.map(function(x){return x.trim()}).filter(Boolean);speechPartIndex=0;speakNext();
+}
+function pause(){if(speechSynthesis.speaking||speechSynthesis.paused){speechSynthesis.paused?speechSynthesis.resume():speechSynthesis.pause();speechMessage(speechSynthesis.paused?'잠시 멈췄어요.':'다시 읽고 있어요.')}else $('#audio').pause()}
+function stop(){if(speechTimer)clearTimeout(speechTimer);speechTimer=null;if('speechSynthesis' in window)speechSynthesis.cancel();activeUtterance=null;speechParts=[];speechPartIndex=0;if($('#speechStatus'))speechMessage('');if($('#audio')){$('#audio').pause();$('#audio').currentTime=0}}
+if('speechSynthesis' in window){speechSynthesis.onvoiceschanged=loadVoices;setTimeout(loadVoices,100);setTimeout(loadVoices,1000)}
+init();setupNarration();
+$$('.lang').forEach(function(button){button.addEventListener('click',refreshNarrationLabels)});
