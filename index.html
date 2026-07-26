@@ -43,26 +43,29 @@
       </article>
     </section>
     <section class="studio" id="parentStudio" hidden>
-      <div class="studio-intro"><b>부모님 목소리</b><h2>세상에서 하나뿐인 목소리 선물</h2><p>녹음할 동화나 동요를 고르면 읽을 글이 아래에 나타납니다. 직접 입력도 할 수 있어요.</p></div>
-      <div class="studio-form">
-        <label>녹음할 내용<select id="recordingTarget"></select></label>
-        <label id="customTitleWrap" hidden>직접 입력 제목<input id="customTitle" maxlength="80" placeholder="예: 예린이의 생일 축하 노래"></label>
-        <label>녹음할 글·가사<textarea id="recordingScript" rows="8" placeholder="녹음할 이야기나 동요 가사를 입력하세요."></textarea></label>
+      <div class="studio-header">
+        <div class="studio-intro"><b>부모님 목소리</b><h2>세상에서 하나뿐인 목소리 선물</h2><p>녹음과 업로드 음원을 엄마·아빠·가족으로 나누어 보관하세요.</p></div>
+        <div class="studio-tabs" role="tablist" aria-label="부모 녹음 메뉴"><button id="recordWorkspaceTab" class="active" role="tab">● 녹음·업로드</button><button id="libraryTab" role="tab">📁 저장함</button></div>
       </div>
-      <div class="record-panel">
-        <div class="record-actions">
-          <button id="record">● 녹음 시작</button>
-          <button id="iosCheck">iPhone 녹음 점검</button>
-          <span id="recordStatus" role="status" aria-live="polite">마이크 준비</span>
+      <div id="recordWorkspace" class="studio-workspace">
+        <div class="studio-form">
+          <label>목소리 분류<select id="speakerType"><option value="mom">엄마</option><option value="dad">아빠</option><option value="family">가족</option></select></label>
+          <label>녹음할 내용<select id="recordingTarget"></select></label>
+          <label id="customTitleWrap" hidden>직접 입력 제목<input id="customTitle" maxlength="80" placeholder="예: 예린이의 생일 축하 노래"></label>
+          <label>녹음할 글·가사<textarea id="recordingScript" rows="8" placeholder="녹음할 이야기나 동요 가사를 입력하세요."></textarea></label>
         </div>
-        <audio id="audio" controls hidden></audio>
-        <div class="file-actions">
-          <label class="file-button" for="audioUpload">MP3·녹음 파일 업로드</label>
-          <input id="audioUpload" type="file" accept="audio/mpeg,audio/mp3,audio/mp4,audio/webm,audio/wav,.mp3,.m4a,.webm,.wav" hidden>
-          <button id="download" hidden>⬇ MP3·녹음 파일 내려받기</button>
-          <button id="delete" hidden>녹음 삭제</button>
+        <div class="record-panel">
+          <div class="record-actions"><button id="record">● 녹음 시작</button><button id="iosCheck">iPhone 녹음 점검</button><span id="recordStatus" role="status" aria-live="polite">마이크 준비</span></div>
+          <audio id="audio" controls hidden></audio>
+          <div class="file-actions"><label class="file-button" for="audioUpload">MP3·녹음 파일 업로드</label><input id="audioUpload" type="file" accept="audio/mpeg,audio/mp3,audio/mp4,audio/webm,audio/wav,.mp3,.m4a,.webm,.wav" hidden><button id="download" hidden>⬇ MP3·녹음 파일 내려받기</button><button id="delete" hidden>녹음 삭제</button></div>
+          <p id="formatHelp">녹음 또는 업로드가 끝나면 선택한 목소리 분류의 저장함에 자동으로 보관됩니다.</p>
         </div>
-        <p id="formatHelp">iPhone은 M4A, 삼성·Chrome은 WebM으로 녹음될 수 있습니다. 업로드한 MP3는 MP3 그대로 내려받습니다.</p>
+      </div>
+      <div id="libraryWorkspace" class="studio-workspace" hidden>
+        <div class="library-filters" role="tablist" aria-label="목소리 분류"><button class="library-filter active" data-speaker="mom">엄마</button><button class="library-filter" data-speaker="dad">아빠</button><button class="library-filter" data-speaker="family">가족</button></div>
+        <p id="libraryStatus" role="status" aria-live="polite"></p>
+        <div id="recordingLibrary" class="recording-library"></div>
+        <audio id="libraryAudio" controls hidden></audio>
       </div>
       <small>🔒 녹음과 업로드 파일은 서버로 전송되지 않고 이 기기의 브라우저에만 보관됩니다.</small>
     </section>

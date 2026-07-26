@@ -18,3 +18,16 @@
 @media(max-width:550px){.controls{grid-template-columns:1fr}.record-actions,.file-actions{align-items:stretch}.record-actions button,.file-actions button,.file-button{width:100%;text-align:center}}
 .studio>.studio-form{display:grid;align-items:stretch;gap:12px;padding:18px;background:#fff8ef}
 #storyView[hidden],#storyControls[hidden]{display:none}
+.studio-header{grid-column:1/-1;display:flex;justify-content:space-between;align-items:end;gap:18px}
+.studio-tabs,.library-filters{display:flex;gap:8px;flex-wrap:wrap}
+.studio-tabs .active,.library-filter.active{background:var(--sage);color:#fff}
+#parentStudio>.studio-workspace{grid-column:1/-1;display:grid;grid-template-columns:.9fr 1.15fr;gap:18px;align-items:start;padding:0;background:transparent}
+#parentStudio>.studio-workspace[hidden]{display:none}
+.recording-library{display:grid;gap:10px;margin-top:14px}
+.recording-card{display:flex;justify-content:space-between;align-items:center;gap:18px;padding:16px 18px;border:1px solid var(--line);border-radius:15px;background:#fff}
+.recording-card h3{margin:7px 0 4px;font:800 19px Georgia,serif}.recording-card p{margin:0;color:var(--muted);font-size:12px}
+.speaker-tag{display:inline-block;padding:4px 9px;border-radius:99px;font-size:12px;font-weight:900}.speaker-tag.mom{background:#ffe0e5;color:#9b4050}.speaker-tag.dad{background:#dfeafb;color:#365f91}.speaker-tag.family{background:#e3f0df;color:#497149}
+.library-actions{display:flex;gap:7px;flex-wrap:wrap}.library-actions .danger{color:#a14338}.library-empty{padding:28px;text-align:center;border:1px dashed var(--line);border-radius:15px;color:var(--muted);background:#fffaf5}
+#libraryAudio{width:100%;margin-top:14px}
+@media(max-width:850px){#parentStudio>.studio-workspace{grid-template-columns:1fr}.studio-header{align-items:flex-start;flex-direction:column}.recording-card{align-items:flex-start;flex-direction:column}.library-actions{width:100%}}
+@media(max-width:550px){.studio-tabs,.library-filters{width:100%}.studio-tabs button,.library-filters button,.library-actions button{flex:1}.recording-card{padding:14px}}
